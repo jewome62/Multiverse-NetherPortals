@@ -59,7 +59,7 @@ public class UnlinkCommand extends NetherPortalCommand {
             return;
         }
 
-        toWorldString = this.plugin.getWorldLink(fromWorld.getName(), type);
+        toWorldString = this.plugin.getWorldLink(fromWorld.getName(), type).getDestination();
         if (toWorldString == null) {
             sender.sendMessage(ChatColor.RED + "Whoops!" + ChatColor.WHITE + " The world " + fromWorld.getColoredWorldString() + ChatColor.WHITE + " was never linked.");
             return;

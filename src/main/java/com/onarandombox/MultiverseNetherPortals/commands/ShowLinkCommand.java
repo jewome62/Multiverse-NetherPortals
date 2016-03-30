@@ -3,6 +3,7 @@ package com.onarandombox.MultiverseNetherPortals.commands;
 import com.onarandombox.MultiverseCore.api.MVWorldManager;
 import com.onarandombox.MultiverseCore.api.MultiverseWorld;
 import com.onarandombox.MultiverseNetherPortals.MultiverseNetherPortals;
+import com.onarandombox.MultiverseNetherPortals.utils.MVLink;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -35,8 +36,8 @@ public class ShowLinkCommand extends NetherPortalCommand {
 
     @Override
     public void runCommand(CommandSender sender, List<String> args) {
-        Map<String, String> links = this.plugin.getWorldLinks();
-        Map<String, String> endlinks = this.plugin.getEndWorldLinks();
+        Map<String, MVLink> links = this.plugin.getWorldLinks();
+        Map<String, MVLink> endlinks = this.plugin.getEndWorldLinks();
 
         boolean end = false; // true to display end; false otherwise
         if(args.size() > 0) {
@@ -48,13 +49,13 @@ public class ShowLinkCommand extends NetherPortalCommand {
         if (!(sender instanceof Player)) {
             if(!end) {
                 sender.sendMessage(ChatColor.AQUA + "--- NetherPortal Links ---");
-                for (Map.Entry<String, String> link : links.entrySet()) {
-                    showWorldLink(sender, link.getKey(), link.getValue());
+                for (Map.Entry<String, MVLink> link : links.entrySet()) {
+                    showWorldLink(sender, link.getKey(), link.getValue().getDestination());
                 }
             } else {
                 sender.sendMessage(ChatColor.AQUA + "--- EnderPortal Links ---");
-                for (Map.Entry<String, String> link : endlinks.entrySet()) {
-                    showWorldLink(sender, link.getKey(), link.getValue());
+                for (Map.Entry<String, MVLink> link : endlinks.entrySet()) {
+                    showWorldLink(sender, link.getKey(), link.getValue().getDestination());
                 }
             }
             return;
@@ -69,7 +70,7 @@ public class ShowLinkCommand extends NetherPortalCommand {
                 page = 1;
             }
         }
-        Map<String, String> displayLinks = (end ? endlinks : links);
+        Map<String, MVLink> displayLinks = (end ? endlinks : links);
         int totalPages = (int) Math.ceil(displayLinks.size() / (CMDS_PER_PAGE + 0.0));
 
         if (page > totalPages) {
@@ -95,7 +96,7 @@ public class ShowLinkCommand extends NetherPortalCommand {
         sender.sendMessage(fromWorldString + ChatColor.WHITE + " -> " + toWorldString);
     }
 
-    private void showPage(int page, CommandSender sender, Map<String, String> links, int totalpages, String headerLabel) {
+    private void showPage(int page, CommandSender sender, Map<String, MVLink> links, int totalpages, String headerLabel) {
         int start = (page - 1) * CMDS_PER_PAGE;
         int end = start + CMDS_PER_PAGE;
         if (totalpages == 0) {
@@ -103,11 +104,11 @@ public class ShowLinkCommand extends NetherPortalCommand {
             return;
         }
         sender.sendMessage(ChatColor.AQUA + "--- " + headerLabel + " Links " + ChatColor.LIGHT_PURPLE + "[Page " + page + " of " + totalpages + " ]" + ChatColor.AQUA + "---");
-        Iterator<Entry<String, String>> entries = links.entrySet().iterator();
+        Iterator<Entry<String, MVLink>> entries = links.entrySet().iterator();
         for (int i = 0; i < end; i++) {
             if (entries.hasNext() && i >= start) {
-                Map.Entry<String, String> entry = entries.next();
-                this.showWorldLink(sender, entry.getKey(), entry.getValue());
+                Map.Entry<String, MVLink> entry = entries.next();
+                this.showWorldLink(sender, entry.getKey(), entry.getValue().getDestination());
             } else if (entries.hasNext()) {
                 entries.next();
             }

@@ -8,6 +8,7 @@ import com.onarandombox.MultiverseCore.event.MVPlayerTouchedPortalEvent;
 import com.onarandombox.MultiverseCore.utils.PermissionTools;
 import com.onarandombox.MultiverseNetherPortals.MultiverseNetherPortals;
 import com.onarandombox.MultiverseNetherPortals.enums.PortalType;
+import com.onarandombox.MultiverseNetherPortals.utils.MVLink;
 import com.onarandombox.MultiverseNetherPortals.utils.MVLinkChecker;
 import com.onarandombox.MultiverseNetherPortals.utils.MVNameChecker;
 import org.bukkit.Location;
@@ -139,7 +140,7 @@ public class MVNPEntityListener implements Listener {
         }
 
         String currentWorld = event.getLocation().getWorld().getName();
-        String linkedWorld = this.plugin.getWorldLink(event.getLocation().getWorld().getName(), type);
+        MVLink linkedWorld = this.plugin.getWorldLink(event.getLocation().getWorld().getName(), type);
         Location currentLocation = event.getLocation();
 
         Location toLocation = null;

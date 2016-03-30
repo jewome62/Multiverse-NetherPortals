@@ -17,12 +17,13 @@ public class LinkCommand extends NetherPortalCommand {
     public LinkCommand(MultiverseNetherPortals plugin) {
         super(plugin);
         this.setName("Sets NP Destination");
-        this.setCommandUsage("/mvnp link " + ChatColor.GREEN + "{end|nether} " + ChatColor.GOLD + "[FROM_WORLD] " + ChatColor.GREEN + " {TO_WORLD}");
-        this.setArgRange(2, 3);
+        this.setCommandUsage("/mvnp link " + ChatColor.GREEN + "{end|nether} " + ChatColor.GOLD + "[FROM_WORLD] " + ChatColor.GREEN + " {TO_WORLD} {X} {Y} {Z}");
+        this.setArgRange(2, 6);
         this.addKey("mvnp link");
         this.addKey("mvnpl");
         this.addKey("mvnplink");
         this.addCommandExample("/mvnp link end world world_nether");
+        this.addCommandExample("/mvnp link end world world_nether x y z");
         this.addCommandExample("/mvnp link end world_nether");
         this.setPermission("multiverse.netherportals.link", "Sets which world to link to when a player enters a NetherPortal in this world.", PermissionDefault.OP);
         this.worldManager = this.plugin.getCore().getMVWorldManager();
@@ -67,8 +68,22 @@ public class LinkCommand extends NetherPortalCommand {
             this.plugin.getCore().showNotMVWorldMessage(sender, toWorldString);
             return;
         }
+        
+        if ((args.size() > 2)) {
+            if((args.size() < 5)){
+                sender.sendMessage("You must add complete coordonate");
+                return;
+            }
+            double x = Double.parseDouble(args.get(3));
+            double y = Double.parseDouble(args.get(4));
+            double z = Double.parseDouble(args.get(5));
+            
+            this.plugin.addWorldLink(fromWorld.getName(), toWorld.getName(), type, x, y, z);
+        } else {
+            this.plugin.addWorldLink(fromWorld.getName(), toWorld.getName(), type);
+        }
 
-        this.plugin.addWorldLink(fromWorld.getName(), toWorld.getName(), type);
+        
         String coloredFrom = fromWorld.getColoredWorldString();
         String coloredTo = toWorld.getColoredWorldString();
         if (fromWorld.getName().equals(toWorld.getName())) {

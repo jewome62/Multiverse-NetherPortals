@@ -19,7 +19,70 @@ public class MVLinkChecker {
         this.worldManager = this.plugin.getCore().getMVWorldManager();
     }
 
-    public Location findNewTeleportLocation(Location fromLocation, String worldstring, Player p) {
+    public Location findNewTeleportLocation(Location fromLocation, MVLink link, Player p) {
+        MultiverseWorld tpto = this.worldManager.getMVWorld(link.getDestination());
+
+        if (tpto == null) {
+            this.plugin.log(Level.FINE, "Can't find world " + link.getDestination());
+        } else if (!this.plugin.getCore().getMVPerms().canEnterWorld(p, tpto)) {
+            this.plugin.log(Level.WARNING, "Player " + p.getName() + " can't enter world " + link.getDestination());
+        } else if (!this.worldManager.isMVWorld(fromLocation.getWorld().getName())) {
+            this.plugin.log(Level.WARNING, "World " + fromLocation.getWorld().getName() + " is not a Multiverse world");
+        } else {
+            this.plugin.log(Level.FINE, "Finding new teleport location for player " + p.getName() + " to world " + link.getDestination());
+
+            if(link.hasCoordonate()){
+                fromLocation.setX(link.getX());
+                fromLocation.setZ(link.getZ());
+                fromLocation.setY(link.getY());
+                fromLocation.setWorld(tpto.getCBWorld());
+                return fromLocation;
+            }
+            // Set the output location to the same XYZ coords but different world
+            double toScaling = this.worldManager.getMVWorld(tpto.getName()).getScaling();
+            MultiverseWorld tpfrom = this.worldManager.getMVWorld(fromLocation.getWorld().getName());
+            double fromScaling = tpfrom.getScaling();
+            double yScaling = 1d * tpfrom.getCBWorld().getMaxHeight() / tpto.getCBWorld().getMaxHeight();
+            fromLocation = this.getScaledLocation(fromLocation, fromScaling, toScaling, yScaling);
+            fromLocation.setWorld(tpto.getCBWorld());
+            return fromLocation;
+        }
+        return null;
+    }
+
+    public void getNewTeleportLocation(PlayerPortalEvent event, Location fromLocation, MVLink link) {
+        MultiverseWorld tpto = this.worldManager.getMVWorld(link.getDestination());
+        if (tpto == null) {
+            this.plugin.log(Level.FINE, "Can't find " + link.getDestination());
+        } else if (!this.plugin.getCore().getMVPerms().canEnterWorld(event.getPlayer(), tpto)) {
+            this.plugin.log(Level.WARNING, "Player " + event.getPlayer().getName() + " can't enter world " + link.getDestination());
+        } else if (!this.worldManager.isMVWorld(fromLocation.getWorld().getName())) {
+            this.plugin.log(Level.WARNING, "World " + fromLocation.getWorld().getName() + " is not a Multiverse world");
+        } else {
+            this.plugin.log(Level.FINE, "Getting new teleport location for player " + event.getPlayer().getName() + " to world " + link.getDestination());
+
+            if(link.hasCoordonate()){
+                fromLocation.setX(link.getX());
+                fromLocation.setZ(link.getZ());
+                fromLocation.setY(link.getY());
+                fromLocation.setWorld(tpto.getCBWorld());
+                event.setTo(fromLocation);
+                return;
+            }
+            
+            // Set the output location to the same XYZ coords but different world
+            double toScaling = tpto.getScaling();
+            MultiverseWorld tpfrom = this.worldManager.getMVWorld(event.getFrom().getWorld().getName());
+            double fromScaling = tpfrom.getScaling();
+            double yScaling = 1d * tpfrom.getCBWorld().getMaxHeight() / tpto.getCBWorld().getMaxHeight();
+            fromLocation = this.getScaledLocation(fromLocation, fromScaling, toScaling, yScaling);
+
+            fromLocation.setWorld(tpto.getCBWorld());
+        }
+        event.setTo(fromLocation);
+    }
+    
+      public Location findNewTeleportLocation(Location fromLocation, String worldstring, Player p) {
         MultiverseWorld tpto = this.worldManager.getMVWorld(worldstring);
 
         if (tpto == null) {

@@ -5,6 +5,7 @@ import com.onarandombox.MultiverseCore.api.MultiverseWorld;
 import com.onarandombox.MultiverseCore.utils.PermissionTools;
 import com.onarandombox.MultiverseNetherPortals.MultiverseNetherPortals;
 import com.onarandombox.MultiverseNetherPortals.enums.PortalType;
+import com.onarandombox.MultiverseNetherPortals.utils.MVLink;
 import com.onarandombox.MultiverseNetherPortals.utils.MVLinkChecker;
 import com.onarandombox.MultiverseNetherPortals.utils.MVNameChecker;
 import org.bukkit.Location;
@@ -57,7 +58,7 @@ public class MVNPPlayerListener implements Listener {
             event.useTravelAgent(true);
         }
 
-        String linkedWorld = this.plugin.getWorldLink(currentWorld, type);
+        MVLink linkedWorld = this.plugin.getWorldLink(currentWorld, type);
 
         if (linkedWorld != null) {
             this.linkChecker.getNewTeleportLocation(event, currentLocation, linkedWorld);

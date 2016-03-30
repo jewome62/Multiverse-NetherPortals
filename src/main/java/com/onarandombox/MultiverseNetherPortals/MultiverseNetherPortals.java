@@ -13,6 +13,7 @@ import com.onarandombox.MultiverseNetherPortals.listeners.MVNPEntityListener;
 import com.onarandombox.MultiverseNetherPortals.listeners.MVNPPlayerListener;
 import com.onarandombox.MultiverseNetherPortals.listeners.MVNPPluginListener;
 import com.onarandombox.MultiversePortals.MultiversePortals;
+import com.onarandombox.MultiverseNetherPortals.utils.MVLink;
 import com.pneumaticraft.commandhandler.multiverse.CommandHandler;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -48,8 +49,8 @@ public class MultiverseNetherPortals extends JavaPlugin implements MVPlugin {
     private String netherSuffix = DEFAULT_NETHER_SUFFIX;
     private String endPrefix = "";
     private String endSuffix = DEFAULT_END_SUFFIX;
-    private Map<String, String> linkMap;
-    private Map<String, String> endLinkMap;
+    private Map<String, MVLink> linkMap;
+    private Map<String, MVLink> endLinkMap;
     protected CommandHandler commandHandler;
     private final static int requiresProtocol = 9;
     private MVNPEntityListener entityListener;
@@ -105,8 +106,8 @@ public class MultiverseNetherPortals extends JavaPlugin implements MVPlugin {
         } catch (InvalidConfigurationException e) {
             this.log(Level.SEVERE, NETEHR_PORTALS_CONFIG + " contained INVALID YAML. Please look at the file.");
         }
-        this.linkMap = new HashMap<String, String>();
-        this.endLinkMap = new HashMap<String, String>();
+        this.linkMap = new HashMap<String, MVLink>();
+        this.endLinkMap = new HashMap<String, MVLink>();
 
         this.setUsingBounceBack(this.isUsingBounceBack());
 
@@ -123,13 +124,21 @@ public class MultiverseNetherPortals extends JavaPlugin implements MVPlugin {
         Set<String> worldKeys = this.MVNPconfiguration.getConfigurationSection("worlds").getKeys(false);
         if (worldKeys != null) {
             for (String worldString : worldKeys) {
-                String nether = this.MVNPconfiguration.getString("worlds." + worldString + ".portalgoesto.NETHER", null);
-                String ender = this.MVNPconfiguration.getString("worlds." + worldString + ".portalgoesto.END", null);
+                String nether = this.MVNPconfiguration.getString("worlds." + worldString + ".portalgoesto.NETHER.destination", null);
+                Double xNether = this.MVNPconfiguration.getDouble("worlds." + worldString + ".portalgoesto.NETHER.x", 0.0);
+                Double yNether = this.MVNPconfiguration.getDouble("worlds." + worldString + ".portalgoesto.NETHER.y", 0.0);
+                Double zNether = this.MVNPconfiguration.getDouble("worlds." + worldString + ".portalgoesto.NETHER.z", 0.0);
+                String end = this.MVNPconfiguration.getString("worlds." + worldString + ".portalgoesto.END", null);
+                Double xEnd = this.MVNPconfiguration.getDouble("worlds." + worldString + ".portalgoesto.END.x", 0.0);
+                Double yEnd = this.MVNPconfiguration.getDouble("worlds." + worldString + ".portalgoesto.END.y", 0.0);
+                Double zEnd = this.MVNPconfiguration.getDouble("worlds." + worldString + ".portalgoesto.END.z", 0.0);
                 if (nether != null) {
-                    this.linkMap.put(worldString, nether);
+                    MVLink netherLink = new MVLink(nether,xNether,yNether,zNether);
+                    this.linkMap.put(worldString, netherLink);
                 }
-                if (ender != null) {
-                    this.endLinkMap.put(worldString, ender);
+                if (end != null) {
+                    MVLink endLink = new MVLink(end,xEnd,yEnd,zEnd);
+                    this.endLinkMap.put(worldString, endLink);
                 }
 
             }
@@ -207,7 +216,8 @@ public class MultiverseNetherPortals extends JavaPlugin implements MVPlugin {
         return this.endSuffix;
     }
 
-    public String getWorldLink(String fromWorld, PortalType type) {
+    public MVLink getWorldLink(String fromWorld, PortalType type) {
+      
         if (type == PortalType.NETHER) {
             return this.linkMap.get(fromWorld);
         } else if (type == PortalType.END) {
@@ -217,24 +227,48 @@ public class MultiverseNetherPortals extends JavaPlugin implements MVPlugin {
         return null;
     }
 
-    public Map<String, String> getWorldLinks() {
+    public Map<String, MVLink> getWorldLinks() {
         return this.linkMap;
     }
 
-    public Map<String, String> getEndWorldLinks() {
+    public Map<String, MVLink> getEndWorldLinks() {
         return this.endLinkMap;
     }
 
     public boolean addWorldLink(String from, String to, PortalType type) {
         if (type == PortalType.NETHER) {
-            this.linkMap.put(from, to);
+            MVLink netherLink = new MVLink(to);
+            this.linkMap.put(from, netherLink);
         } else if (type == PortalType.END) {
-            this.endLinkMap.put(from, to);
+            MVLink endLink = new MVLink(to);
+            this.endLinkMap.put(from, endLink);
+        } else {
+            return false;
+        }
+
+        this.MVNPconfiguration.set("worlds." + from + ".portalgoesto." + type +".destination", to);
+        this.MVNPconfiguration.set("worlds." + from + ".portalgoesto." + type +".x", 0.0);
+        this.MVNPconfiguration.set("worlds." + from + ".portalgoesto." + type +".y", 0.0);
+        this.MVNPconfiguration.set("worlds." + from + ".portalgoesto." + type +".z", 0.0);
+        this.saveMVNPConfig();
+        return true;
+    }
+    
+     public boolean addWorldLink(String from, String to, PortalType type, double x, double y, double z) {
+        if (type == PortalType.NETHER) {
+            MVLink netherLink = new MVLink(to, x, y, z);
+            this.linkMap.put(from, netherLink);
+        } else if (type == PortalType.END) {
+            MVLink endLink = new MVLink(to, x, y, z);
+            this.endLinkMap.put(from, endLink);
         } else {
             return false;
         }
 
         this.MVNPconfiguration.set("worlds." + from + ".portalgoesto." + type, to);
+        this.MVNPconfiguration.set("worlds." + from + ".portalgoesto." + type +".x", x);
+        this.MVNPconfiguration.set("worlds." + from + ".portalgoesto." + type +".y", y);
+        this.MVNPconfiguration.set("worlds." + from + ".portalgoesto." + type +".z", z);
         this.saveMVNPConfig();
         return true;
     }
@@ -331,7 +365,7 @@ public class MultiverseNetherPortals extends JavaPlugin implements MVPlugin {
 
     public String getVersionInfo() {
         StringBuilder buffer = new StringBuilder();
-        buffer.append("[Multiverse-NetherPortals] Multiverse-NetherPortals Version: ").append(this.getDescription().getVersion()).append('\n');
+        buffer.append("[Multiverse-NetherPortals] Multiverse-NetherPortals Version: ").append(this.getDescription().getVersion()).append("Edit by jewome62\n");
         buffer.append("[Multiverse-NetherPortals] World links: ").append(this.getWorldLinks()).append('\n');
         buffer.append("[Multiverse-NetherPortals] Nether Prefix: ").append(netherPrefix).append('\n');
         buffer.append("[Multiverse-NetherPortals] Nether Suffix: ").append(netherSuffix).append('\n');
