@@ -50,12 +50,12 @@ public class ShowLinkCommand extends NetherPortalCommand {
             if(!end) {
                 sender.sendMessage(ChatColor.AQUA + "--- NetherPortal Links ---");
                 for (Map.Entry<String, MVLink> link : links.entrySet()) {
-                    showWorldLink(sender, link.getKey(), link.getValue().getDestination());
+                    showWorldLink(sender, link.getKey(), link.getValue());
                 }
             } else {
                 sender.sendMessage(ChatColor.AQUA + "--- EnderPortal Links ---");
                 for (Map.Entry<String, MVLink> link : endlinks.entrySet()) {
-                    showWorldLink(sender, link.getKey(), link.getValue().getDestination());
+                    showWorldLink(sender, link.getKey(), link.getValue());
                 }
             }
             return;
@@ -79,21 +79,26 @@ public class ShowLinkCommand extends NetherPortalCommand {
         this.showPage(page, sender, displayLinks, totalPages, (end ? "EnderPortals" : "NetherPortals"));
     }
 
-    private void showWorldLink(CommandSender sender, String fromWorldString, String toWorldString) {
+    private void showWorldLink(CommandSender sender, String fromWorldString, MVLink link) {
         MultiverseWorld fromWorld = this.worldManager.getMVWorld(fromWorldString);
-        MultiverseWorld toWorld = this.worldManager.getMVWorld(toWorldString);
-
+        MultiverseWorld toWorld = this.worldManager.getMVWorld(link.getDestination());
+        String toWorldString;
         if (fromWorld == null) {
-            fromWorldString = ChatColor.RED + "!!ERROR!!";
+            fromWorldString = ChatColor.RED + "!!ERROR!!"+fromWorldString;
         } else {
             fromWorldString = fromWorld.getColoredWorldString();
         }
         if (toWorld == null) {
-            toWorldString = ChatColor.RED + "!!ERROR!!";
+            toWorldString = ChatColor.RED + "!!ERROR!! "+link.getDestination();
         } else {
             toWorldString = toWorld.getColoredWorldString();
         }
-        sender.sendMessage(fromWorldString + ChatColor.WHITE + " -> " + toWorldString);
+        
+        if(link.hasCoordonate()){
+            sender.sendMessage(fromWorldString + ChatColor.WHITE + " -> " + link.getDestination()+ "["+link.getX().toString()+","+link.getY().toString()+","+link.getZ().toString()+"]");
+            return;
+        }
+        sender.sendMessage(fromWorldString + ChatColor.WHITE + " -> " + link.getDestination());
     }
 
     private void showPage(int page, CommandSender sender, Map<String, MVLink> links, int totalpages, String headerLabel) {
@@ -108,7 +113,7 @@ public class ShowLinkCommand extends NetherPortalCommand {
         for (int i = 0; i < end; i++) {
             if (entries.hasNext() && i >= start) {
                 Map.Entry<String, MVLink> entry = entries.next();
-                this.showWorldLink(sender, entry.getKey(), entry.getValue().getDestination());
+                this.showWorldLink(sender, entry.getKey(), entry.getValue());
             } else if (entries.hasNext()) {
                 entries.next();
             }

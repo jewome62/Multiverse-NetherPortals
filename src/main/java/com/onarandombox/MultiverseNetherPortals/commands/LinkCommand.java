@@ -69,8 +69,8 @@ public class LinkCommand extends NetherPortalCommand {
             return;
         }
         
-        if ((args.size() > 2)) {
-            if((args.size() < 5)){
+        if ((args.size() > 3)) {
+            if((args.size() < 6)){
                 sender.sendMessage("You must add complete coordonate");
                 return;
             }
